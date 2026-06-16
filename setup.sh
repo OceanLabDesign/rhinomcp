@@ -47,9 +47,10 @@ else
   printf 'note: claude CLI not found — will print the MCP client config instead of auto-registering.\n'
 fi
 
-# 2. Build & install the Rhino plugin (delegates; CONFIG/RHINO_VERSION are
-#    read from the environment by the child script).
-info "building & installing the Rhino plugin"
+# 2. Build & install the Rhino plugin (delegates to plugin/install.sh, which on
+#    macOS builds a Yak package and installs it). Rhino must be CLOSED for this —
+#    a running Rhino locks the package; install.sh errors out if it's open.
+info "building & installing the Rhino plugin (Rhino must be closed)"
 bash "$ROOT_DIR/plugin/install.sh"
 
 # 3. Python server: venv + editable install (subshell keeps our cwd intact).
@@ -84,8 +85,7 @@ echo
 bold "Setup done."
 cat <<EOF
 Last step — start the bridge inside Rhino:
-  1. Launch Rhino 8. (First install only: drag the rhinomcp.rhp printed above
-     onto a viewport and accept the load dialog so Rhino registers it.)
+  1. Launch Rhino 8 — it loads the installed Yak package automatically (no drag-drop).
   2. In the Rhino command line, type:  mcpstart
   3. Reconnect your MCP client — you'll see the tools, including diagnose_edge_pair.
 

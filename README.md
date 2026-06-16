@@ -205,8 +205,10 @@ build the plugin and run the Python server from your local clone.
 # Windows (PowerShell)
 powershell -ExecutionPolicy Bypass -File plugin\install.ps1
 ```
-First time only: launch Rhino 8, drag the built `rhinomcp.rhp` (path printed by the script) onto a
-viewport, and accept the load dialog. Rhino remembers the path and picks up later rebuilds on next launch.
+On **macOS** the script installs a Yak package — Rhino for Mac can't sideload a raw `.rhp` — so just
+launch Rhino 8 and it loads automatically (no drag-drop). Rhino must be **closed while the script runs**
+(a running Rhino locks the package). On **Windows**, first time only: drag the built `rhinomcp.rhp`
+(path printed by the script) onto a viewport and accept the load dialog.
 
 **2. Set up the Python server**
 
