@@ -98,9 +98,10 @@ public partial class RhinoMCPFunctions
         double nearDev;
         bool nearPlanar = DiagNearPlanar(new[] { A.Curve, B.Curve }, tol, out nearDev);
 
-        // 邊界複雜度:Phase 1 用端點配對啟發式(嚴謹做法走 naked edge loop 拓樸,待後續)。
-        double refMax = gap != null ? gap.Max : tol;
-        string boundary = ends.EndGapAvg <= Math.Max(2.0 * tol, 0.5 * refMax) ? "two_edge" : "multi_edge";
+        // 邊界複雜度:我們只診斷選取的這兩條邊,成對關係本質就是 two_edge。真正的 multi_edge
+        // (naked 邊界是 >2 條邊的迴圈)要走 edge-loop 拓樸,待後續(TODO)。舊的端點-間距代理
+        // 會把每個「均勻縫」誤標成 multi_edge(EndGapAvg≈maxGap),故移除。
+        string boundary = "two_edge";
 
         string diagnosis, cont;
         DiagClassify(bothNaked, gap, ends, tol, out diagnosis, out cont);
@@ -405,9 +406,10 @@ public partial class RhinoMCPFunctions
         if (!bothNaked) { diagnosis = "not_a_gap"; cont = maxGap <= tol ? "G0" : "G-1"; return; }
         if (maxGap <= tol) { diagnosis = "unjoined_coincident"; cont = "G0"; return; }
 
-        bool endsOk = ends.EndGapAvg <= Math.Max(2.0 * tol, 0.5 * maxGap);
+        // 乾淨的平行縫 EndGapAvg ≈ maxGap,舊的「EndGapAvg ≤ 0.5*maxGap」會把每個均勻縫都打掉。
+        // 均勻與否才是 gap 的正確訊號;staggered 仍負責剝掉鉸鏈情況(一端碰、另一端大開)。
         bool staggered = (Math.Min(ends.EndGaps[0], ends.EndGaps[1]) <= tol) && (maxGap > 5.0 * tol);
-        if (gap.Uniform && endsOk && !staggered) { diagnosis = "gap"; cont = "G-1"; return; }
+        if (gap.Uniform && !staggered) { diagnosis = "gap"; cont = "G-1"; return; }
         diagnosis = "misalignment"; cont = "G-1";
     }
 
