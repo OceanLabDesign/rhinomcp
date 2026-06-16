@@ -12,3 +12,6 @@ grasshopper_mcp_server/
 AGENTS.md
 CLAUDE.md
 GRASSHOPPER_MCP_IMPLEMENTATION_PLAN.md
+
+# Local, machine-specific MCP server config (absolute venv path; do not commit).
+.mcp.json
