@@ -87,6 +87,12 @@ Prefer a walkthrough? Nate made a showcase and install [tutorial on YouTube](htt
 
 ## Quick start
 
+> [!IMPORTANT]
+> **This is the OceanLab fork.** It adds an analysis-evaluation layer (e.g. the `diagnose_edge_pair`
+> tool) that is **not** in the published `rhinomcp` package or the Package Manager build. The Quick
+> start below installs the **upstream** version. To get this fork's tools, build from source —
+> see [Install this fork from source](#install-this-fork-from-source-oceanlab).
+
 Three steps: install the Rhino plugin, connect your AI client, then start the bridge in Rhino.
 
 ### 1. Install the Rhino plugin
@@ -180,6 +186,62 @@ To clean up a stale `rhinomcp` process each time your client launches:
 
 With Rhino open, type **`mcpstart`** in the command line. This starts the TCP bridge the server
 connects to (`mcpstop` ends it). Run it once per Rhino session.
+
+## Install this fork from source (OceanLab)
+
+The published `rhinomcp` package and the Package Manager build are **upstream** — they do not
+include this fork's analysis-evaluation tools (`diagnose_edge_pair`, …). To run this version you
+build the plugin and run the Python server from your local clone.
+
+**Prerequisites:** Rhino 8 · the [.NET 8 SDK](https://dotnet.microsoft.com/) · [uv](https://docs.astral.sh/uv/) · an MCP client (Claude Code/Desktop, Cursor, …).
+
+**1. Build & install the Rhino plugin**
+
+```bash
+# macOS
+./plugin/install.sh
+```
+```powershell
+# Windows (PowerShell)
+powershell -ExecutionPolicy Bypass -File plugin\install.ps1
+```
+First time only: launch Rhino 8, drag the built `rhinomcp.rhp` (path printed by the script) onto a
+viewport, and accept the load dialog. Rhino remembers the path and picks up later rebuilds on next launch.
+
+**2. Set up the Python server**
+
+```bash
+cd server
+uv venv
+uv pip install -e .
+```
+
+**3. Point your MCP client at this local server** (not `uvx rhinomcp`, which is upstream)
+
+```bash
+# Claude Code — replace the path with your clone
+claude mcp add rhino -- uv run --directory /path/to/rhinomcp/server rhinomcp
+```
+Or edit the client config by hand (Claude Desktop / Cursor / Codex):
+```json
+{
+  "mcpServers": {
+    "rhino": {
+      "command": "uv",
+      "args": ["run", "--directory", "/path/to/rhinomcp/server", "rhinomcp"],
+      "env": { "RHINO_MCP_HOST": "127.0.0.1" }
+    }
+  }
+}
+```
+Run only one RhinoMCP server at a time.
+
+**4. Start the bridge in Rhino**
+
+Open Rhino 8 and type `mcpstart`. Your client now lists the tools, including `diagnose_edge_pair`.
+
+> After a code change: re-run the install script (plugin C# needs a Rhino restart) and restart the
+> MCP server (new Python tools are picked up on server restart).
 
 ## Usage
 
