@@ -71,6 +71,7 @@ READONLY_RETRY_COMMANDS = {
     "get_object_info",
     "get_object_attributes",
     "analyze_objects",
+    "diagnose_edge_pair",
     "get_selected_objects_info",
     "get_document_summary",
     "get_objects",

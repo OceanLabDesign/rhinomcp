@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "diagnose_edge_pair.json",
+  "title": "DiagnoseEdgePair Command",
+  "description": "Diagnose the relationship between the two currently selected Brep edge sub-objects. Reads the current selection only.",
+  "type": "object",
+  "properties": {
+    "exclude_extrusion": {
+      "type": "boolean",
+      "default": false,
+      "description": "When false (default), an edge picked on an Extrusion object is still measured but flagged unverified, with its endpoints exposed in measurements.extrusion_edges for in-Rhino confirmation. When true, Extrusion edges are skipped entirely (use when ToBrep() edge-index correspondence is known to be unreliable)."
+    }
+  },
+  "additionalProperties": false
+}

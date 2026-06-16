@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "diagnose_edge_pair_result.json",
+  "title": "DiagnoseEdgePair Response",
+  "description": "Diagnosis of the relationship between two selected Brep edges. Diagnose-only; never modifies the document.",
+  "type": "object",
+  "properties": {
+    "diagnosis": {
+      "type": "string",
+      "enum": ["gap", "misalignment", "unjoined_coincident", "not_a_gap"]
+    },
+    "edges": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "parent_brep_id": { "type": "string" },
+          "index": { "type": "integer" },
+          "is_naked": { "type": "boolean" },
+          "valence": { "type": "string" },
+          "length": { "type": ["number", "null"] },
+          "degree": { "type": "integer" }
+        },
+        "required": ["id", "parent_brep_id", "is_naked", "length", "degree"],
+        "additionalProperties": false
+      }
+    },
+    "gap": {
+      "type": ["object", "null"],
+      "properties": {
+        "max": { "type": "number" },
+        "mean": { "type": "number" },
+        "min": { "type": "number" },
+        "uniform": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+    "continuity_current": { "type": "string" },
+    "boundary_complexity": { "type": "string", "enum": ["two_edge", "multi_edge"] },
+    "near_planar": { "type": "boolean" },
+    "recommended_roadmaps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "strategy": { "type": "string" },
+          "continuity": { "type": "string" },
+          "confidence": { "type": "number" },
+          "steps": { "type": "array", "items": { "type": "string" } },
+          "why": { "type": "string" }
+        },
+        "required": ["strategy", "continuity", "confidence", "steps", "why"],
+        "additionalProperties": false
+      }
+    },
+    "warnings": { "type": "array", "items": { "type": "string" } },
+    "measurements": { "type": "object" },
+    "error": { "type": "string" },
+    "how_to_select": { "type": "string" }
+  },
+  "required": [
+    "diagnosis",
+    "edges",
+    "continuity_current",
+    "boundary_complexity",
+    "near_planar",
+    "recommended_roadmaps",
+    "warnings"
+  ],
+  "additionalProperties": false
+}
