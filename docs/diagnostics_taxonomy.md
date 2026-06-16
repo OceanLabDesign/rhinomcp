@@ -1,19 +1,19 @@
 ## 分析評估分類學 (Diagnostics Taxonomy)
 
-> **用途**:這是 OceanLab「Rhino 幾何分析評估」專案的版圖。它把 **Rhino 全部原生分析能力**做精準分類,標出哪些基底已覆蓋、哪些是我們要補的格。每新增一項分析評估,就往這張表填一個座標。
-> **維護**:新增分析能力 / 新分析評估時更新 §3 主分類表與 §6 roadmap。
-> **最後更新**:2026-06-14。
-> **相容鐵則**:分析評估只感知不修補;本文件中歸入「修改/修復」的指令我們永不執行(見 §4)。
+> 這份是 OceanLab「Rhino 幾何分析評估」專案的底圖:把 Rhino 原生的分析能力全攤開分類,看哪些基底已經有、哪些得我們自己長。每多一項分析評估,就往表裡填一格。
+> 維護:加新能力或新項目時,順手更新 §3 的表跟 §6 roadmap。
+> 最後更新 2026-06-14。
+> 一條底線:分析評估只看不改,§4 那些會動到幾何的指令我們一律不碰。
 
 ---
 
 ## 1. 一句話模型
 
-- **Rhino 原生分析** = 全種類 × 各基數 × **L0**(給數字/給顏色,不下判斷)
-- **基底 `analyze_objects`** = 量測+拓樸子集 × 單體 × L0
-- **分析評估(我們)** = 任意種類 × 任意基數(含 **N 群集**)× **L1+L2**(判讀+處方)×(跨幾何型別)
+- Rhino 原生分析 = 全種類 × 各基數 × L0(給數字、給顏色,不下判斷)
+- 基底 analyze_objects = 量測+拓樸的一部分 × 單體 × L0
+- 我們的分析評估 = 任意種類 × 任意基數(含 N 群集)× L1+L2(判讀+處方),而且跨幾何型別
 
-分析評估的本質不是「某一種分析」,而是 **L1/L2 判讀層**——把 Rhino 的「儀器讀數」變成「診斷結論 + 排序修補劇本」。
+說穿了,我們做的不是某一種分析,是上面那層 L1/L2:把 Rhino 的儀器讀數,翻成「這是什麼毛病、該怎麼修」。
 
 ```mermaid
 flowchart LR
@@ -31,59 +31,85 @@ flowchart LR
 
 ## 2. 分類軸(正交)
 
-每個工具用一組座標定位,避免把不同維度混成扁平清單。
+每支工具給一組座標,不要全擠成一張扁平清單。
 
-### 軸 1 — 種類 Kind(量「什麼」):7 家族
+### 軸 1 — 種類 Kind(量什麼):7 家族
 量測 / 拓樸有效性 / 連續性 / 曲率品質 / 方向 / 偏差吻合 / 位置關係。
 
-### 軸 2 — 基數 Arity(「幾個」一起看)
-- **單體 (1)**:一個物件或一個子物件自己。
-- **成對 (2)**:兩個實體之間的關係。
-- **群集 (N)**:≥3 個互相關聯的實體(邊環、面組、物件集)。← 不是 pair 的延伸,是一等公民。
-- 子維度 **層級**:子物件(邊/面/頂點)/ 物件 / 文件。
+### 軸 2 — 基數 Arity(幾個一起看)
+- 單體 (1):一個物件、或一個子物件自己。
+- 成對 (2):兩個實體之間的關係。
+- 群集 (N):≥3 個互相關聯的實體(邊環、面組、物件集)。這不是 pair 的延伸,是一等公民。
+- 另外帶一個層級:子物件(邊/面/頂點)/ 物件 / 文件。
 
-### 軸 3 — 產出 Output(給「數字」還是給「判斷」)
-- **L0 描述**:原始數值 / 顏色 / 視覺(Rhino 原生 + 基底 `analyze_objects`)。
-- **L1 判讀**:分類 + 信心(例:這是 `gap` / `misalignment` / `unjoined_coincident`)。
-- **L2 處方**:排序修補劇本(例:BlendSrf > Loft > Sweep2,含步驟與驗證點)。
+### 軸 3 — 產出 Output(給數字還是給判斷)
+- L0 描述:原始數值、顏色、視覺(Rhino 原生 + 基底 analyze_objects)。
+- L1 判讀:分類加信心,像「這是 gap / misalignment / unjoined_coincident」。
+- L2 處方:排序過的修補劇本,像 BlendSrf > Loft > Sweep2,含步驟跟驗證點。
 
-### 維度 — 幾何型別 Geometry type
-同一分析在不同型別上行為不同,且子物件拓樸不同:
-**Curve / Surface-Polysurface(Brep)/ SubD / Mesh / Extrusion / PointCloud**。
-> 重要:SubD 邊有 crease/smooth 概念、Mesh 邊是 topology edge,naked 判定與連續性跟 Brep **不同套**。
+### 維度 — 幾何型別
+同一個分析,換個型別行為就不一樣,子物件拓樸也不同:
+Curve / Surface-Polysurface(Brep)/ SubD / Mesh / Extrusion / PointCloud。
+SubD 邊有 crease/smooth、Mesh 邊是 topology edge,naked 判定跟連續性都跟 Brep 不同套,別混。
 
 ---
 
 ## 3. 主分類表:7 種類 × 全 Rhino 原生分析指令
 
-> 指令清單已交叉核對 5 個 McNeel 權威頁(見 §7)。✅=基底已包成 MCP 工具;⚪=只能經 `run_command`/`execute_*` 逃生口呼叫(仍 L0);❌=完全沒有。
+指令清單對過 5 個 McNeel 官方頁(見 §7)。基底現況欄:✅=已包成 MCP 工具;⚪=只能用 run_command / execute_* 逃生口呼叫,回來還是 L0;❌=沒有。
 
 | # | 種類 Kind | Rhino 原生指令(完整) | 典型基數 | 基底現況 | 分析評估切入(L1/L2) |
 |---|---|---|---|---|---|
-| 1 | **量測 Metric** | Distance, Length, Angle, Radius, Diameter, Domain, Curvature(點), EvaluatePt, EvaluateUVPt, BoundingBox, MarkFoci, CutVolume, Area, AreaCentroid, AreaMoments, Volume, VolumeCentroid, VolumeMoments, Hydrostatics, DimArea, DimVolume, DimAngle, DimCurveLength | 單體(Distance/Angle/CutVolume 成對) | ✅ `analyze_objects` 覆蓋大半(length/area/volume/centroid/bbox/degree) | 低(數值本身不需判讀) |
-| 2 | **拓樸/有效性 Topology** | Check, CheckNewObjects, SelBadObjects, ShowEdges, ShowEnds, PolygonCount, List, What, Audit | 單體 / **文件**(SelBadObjects/Audit 掃全場) | ⚪ 部分:`valid`+`validity_log`+整體 `naked_edge_count`+`is_solid` | **中高**:子物件層級 + 把「壞在哪、怎麼修」轉成 L1/L2 |
-| 3 | **連續性 Continuity** | GCon(兩曲線), EdgeContinuity(跨邊兩面) | **成對 / 群集**(邊環、面組) | ❌ | **高**:`diagnose_edge_pair` 的連續性現況就在這 |
-| 4 | **曲率/曲面品質 Quality** | CurvatureAnalysis, Curvature, CurvatureGraph, ExtractCurvatureGraph⁽ᵉˣ⁾, DraftAngleAnalysis, DraftAnglePoint, ThicknessAnalysis, Zebra, EMap, Bounce | 單體 / 群集(面組) | ❌ | 中:把 false-color/comb 轉成「最小半徑<刀具」「拔模角不足不可脫模」「壁厚不足」 |
-| 5 | **方向/定向 Orientation** | Dir, ShowDir | 單體 / **群集**(多重曲面法線一致性) | ❌ | 中:群集法線一致性是典型 N 元診斷 |
-| 6 | **偏差/吻合 Deviation** | CrvDeviation(兩曲線), PointDeviation(點集 vs 面/線) | **成對 / 群集**(點雲 vs 面) | ❌(`GetDistancesBetweenCurves` 未被包成工具) | **高**:gap 量測、逆向工程吻合度 |
-| 7 | **位置關係/碰撞 Spatial** | **Clash(兩組 SET)**, IntersectSelf(自交), CutVolume⁽ᵐ⁾, SelDup/SelDupAll⁽ˢᵉˡ⁾ | **成對 / 群集(Clash 多對多)** | ❌ | **高**:碰撞、重合未接、重複物件,全是關係型判讀 |
+| 1 | 量測 Metric | Distance, Length, Angle, Radius, Diameter, Domain, Curvature(點), EvaluatePt, EvaluateUVPt, BoundingBox, MarkFoci, CutVolume, Area, AreaCentroid, AreaMoments, Volume, VolumeCentroid, VolumeMoments, Hydrostatics, DimArea, DimVolume, DimAngle, DimCurveLength | 單體(Distance/Angle/CutVolume 成對) | ✅ analyze_objects 覆蓋大半(length/area/volume/centroid/bbox/degree) | 低,數字就是數字 |
+| 2 | 拓樸/有效性 Topology | Check, CheckNewObjects, SelBadObjects, ShowEdges, ShowEnds, PolygonCount, List, What, Audit | 單體 / 文件(SelBadObjects、Audit 掃全場) | ⚪ 部分:valid + validity_log + 整體 naked_edge_count + is_solid | 中高,做子物件層級、把「壞在哪、怎麼修」補成 L1/L2 |
+| 3 | 連續性 Continuity | GCon(兩曲線), EdgeContinuity(跨邊兩面) | 成對 / 群集(邊環、面組) | ❌ | 高,diagnose_edge_pair 的連續性就在這 |
+| 4 | 曲率/曲面品質 Quality | CurvatureAnalysis, Curvature, CurvatureGraph, ExtractCurvatureGraph⁽ᵉˣ⁾, DraftAngleAnalysis, DraftAnglePoint, ThicknessAnalysis, Zebra, EMap, Bounce | 單體 / 群集(面組) | ❌ | 中,把 false-color / comb 翻成「最小半徑<刀具」「拔模不夠脫不了模」「壁太薄」 |
+| 5 | 方向/定向 Orientation | Dir, ShowDir | 單體 / 群集(多重曲面法線一致性) | ❌ | 中,整片法線一不一致是典型 N 元診斷 |
+| 6 | 偏差/吻合 Deviation | CrvDeviation(兩曲線), PointDeviation(點集 vs 面/線) | 成對 / 群集(點雲 vs 面) | ❌(GetDistancesBetweenCurves 還沒被包成工具) | 高,gap 量測、逆向吻合度 |
+| 7 | 位置關係/碰撞 Spatial | Clash(兩組 SET), IntersectSelf(自交), CutVolume⁽ᵐ⁾, SelDup/SelDupAll⁽ˢᵉˡ⁾ | 成對 / 群集(Clash 多對多) | ❌ | 高,碰撞、重合未接、重複,全是看關係 |
 
-註:
-- **跨家族**:`Zebra`/`EMap` 是反射視覺工具,同時服務 #3 連續性與 #4 曲面品質;`EdgeContinuity` 官方同列於「Analyze object」與「surface quality」,本表歸 #3(數值跨邊 G 連續)。
-- ⁽ᵉˣ⁾ `ExtractCurvatureGraph` 會產生曲率梳幾何(extract 性質),分析語意屬 #4。
-- ⁽ᵐ⁾ `CutVolume` 同屬 #1 量測(交集體積)。
-- ⁽ˢᵉˡ⁾ `SelDup/SelDupAll` 在 Select 選單(選擇型重複偵測),功能上屬 #7。
+幾個歸類沒那麼乾淨的,先講清楚:
+- Zebra、EMap 是反射視覺,#3 連續性跟 #4 品質都用得到;EdgeContinuity 官方兩處都列,這裡歸 #3(它是跨邊的數值 G 連續)。
+- ⁽ᵉˣ⁾ ExtractCurvatureGraph 會把曲率梳變成幾何(算 extract),但語意是 #4。
+- ⁽ᵐ⁾ CutVolume 也算 #1 量測(交集體積)。
+- ⁽ˢᵉˡ⁾ SelDup/SelDupAll 在 Select 選單、不在 Analyze,但做的事是 #7。
 
 ---
 
-## 4. 排除清單(精準界定:這些不是「分析」)
+## 3.5 換個軸看:點線面體
 
-| 類別 | 指令 | 為何排除 |
+§3 按「量什麼」分,這節按「在哪種幾何上量」分,同一批指令重排一次。順便當完整性檢查——每支都歸得進去,沒跑出 §3 以外的東西,兩個軸就對得起來。
+
+**點(點/點雲/座標)**
+EvaluatePt(報座標)、Distance(兩點距)、PointDeviation(點雲對面或線的偏差)、MarkFoci(圓錐焦點)。Rhino 這塊幾乎是空的,點雲沒什麼原生判讀,真要做得自己量。
+
+**線(曲線、邊)**
+Length、Radius、Diameter、Angle、Domain 量大小;Curvature、CurvatureGraph 看曲率梳;GCon 比兩曲線連續;CrvDeviation 比兩曲線偏差;Dir 看方向;ShowEnds 找開放端;IntersectSelf 抓自交。diagnose_edge_pair 吃的就是這層,邊本質是線,只是掛在面/體上。
+
+**面(曲面、多重曲面)**
+Area、AreaCentroid 量面積;CurvatureAnalysis、Zebra、EMap 看曲面品質;DraftAngleAnalysis 看拔模;ThicknessAnalysis 看壁厚;EdgeContinuity 比跨邊兩面連續;Dir 看法線;ShowEdges 抓 naked/non-manifold 邊;再加 EvaluateUVPt、IntersectSelf。
+
+**體(封閉多重曲面)**
+Volume、VolumeCentroid、VolumeMoments、Hydrostatics 算質量浮體;CutVolume 算交集體積;ThicknessAnalysis 看壁厚;Check、SelBadObjects 驗有效性;ShowEdges 看 naked 邊是不是 0(這才算真封閉);Clash 抓碰撞。
+
+哪種都吃的:BoundingBox、List、What、Audit、SelDup、Check 那一串。
+另外兩種型別:Mesh 有 PolygonCount、ShowEdges、Area、Volume;SubD 從 Rhino 8 起 CurvatureAnalysis、CurvatureGraph、PointDeviation、Volume 也都收了。
+
+按型別看才跳出來的三件事:
+- 點雲基本沒得用,要做這塊等於從零。
+- 線是我們挖最深的一層,edge_pair 現在、edge_loop 之後都在這。
+- 「體到底封了沒」沒有單一指令,得 ShowEdges(naked=0)配 Check 一起看,對應 roadmap 的 shell_watertight。
+
+---
+
+## 4. 這些不算分析(會動到幾何 / 純工具)
+
+| 類別 | 指令 | 為什麼不收 |
 |---|---|---|
-| 修改 / 修復 | Flip, MeshRepair, Untrim, EndBulge | 會**改幾何**(edit/repair)。Rhino 把它們塞在 Analyze 選單的「Repair」,但本質是動手——**分析評估永不執行**(鐵則 3) |
-| 產生 / 抽取 | DupEdge, DupBorder, DupFaceBorder, Silhouette, Contour, Section, ExtractPt, ExtractIsocurve | 會**產生新幾何**供檢視,是 create/extract,不是 analyze |
-| 工具 / 計算機 | Calc, CalcRPN, ClearAnalysisMeshes | 非幾何分析(計算機 / 清暫存分析網) |
-| 顯示切換 | ShowDirOff, ShowEdgesOff, ShowEndsOff, CurvatureGraphOff, CurvatureAnalysisOff | 顯示狀態開關,非獨立分析 |
+| 修改 / 修復 | Flip, MeshRepair, Untrim, EndBulge | 會改幾何。Rhino 把它們放在 Analyze 選單的 Repair 底下,但本質是動手——我們一律不碰(鐵則 3) |
+| 產生 / 抽取 | DupEdge, DupBorder, DupFaceBorder, Silhouette, Contour, Section, ExtractPt, ExtractIsocurve | 會生出新幾何給你看,是 create/extract,不是看 |
+| 工具 / 計算機 | Calc, CalcRPN, ClearAnalysisMeshes | 不是幾何分析(計算機、清暫存分析網) |
+| 顯示開關 | ShowDirOff, ShowEdgesOff, ShowEndsOff, CurvatureGraphOff, CurvatureAnalysisOff | 只是顯示切換,不是獨立分析 |
 
 ---
 
@@ -91,11 +117,11 @@ flowchart LR
 
 | 對象 | 種類 | 基數 | 產出 | 幾何型別 |
 |---|---|---|---|---|
-| **Rhino 原生分析指令** | 全 7 家族 | 各基數 | **L0** | 各型別 |
-| **基底 `analyze_objects`** | 量測 + 拓樸子集 | 單體(物件層級) | **L0** | Brep/Curve/Mesh/Extrusion/Surface |
-| **`diagnose_edge_pair`(第一項分析評估)** | 拓樸 + 連續性 + 偏差 + 位置關係 | **成對 / 子物件** | **L1 + L2** | **目前僅 Brep 邊** |
+| Rhino 原生分析指令 | 全 7 家族 | 各基數 | L0 | 各型別 |
+| 基底 analyze_objects | 量測 + 拓樸子集 | 單體(物件層級) | L0 | Brep/Curve/Mesh/Extrusion/Surface |
+| diagnose_edge_pair(第一項分析評估) | 拓樸 + 連續性 + 偏差 + 位置關係 | 成對 / 子物件 | L1 + L2 | 目前只吃 Brep 邊 |
 
-基底其他唯讀工具(`get_object_info`/`get_selected_objects_info`/`get_document_summary`/`object_attributes`/`capture_viewport`)皆 L0;`execute_*`/`run_command` 可呼叫任何 Rhino 原生分析指令,但回傳仍是 L0 原始文字。
+基底其他唯讀工具(get_object_info、get_selected_objects_info、get_document_summary、object_attributes、capture_viewport)也都是 L0;execute_* / run_command 能呼叫任何 Rhino 原生分析,但回來還是 L0 原始文字。
 
 ---
 
@@ -103,29 +129,29 @@ flowchart LR
 
 | 分析評估 | 種類 | 基數 | 產出 | 狀態 |
 |---|---|---|---|---|
-| `diagnose_edge_pair` | 拓樸+連續性+偏差+位置 | 成對 / 子物件 | L1+L2 | **Phase 1 進行中** |
-| `diagnose_edge_loop` | 連續性+拓樸 | **群集**(一圈 naked edge) | L1+L2 | 候選 |
-| `diagnose_shell_watertight` | 拓樸 | **群集**(面組能否接成水密實體) | L1+L2 | 候選 |
-| `diagnose_surfaceset_continuity` | 連續性 | **群集**(多片面 G 連續地圖) | L1+L2 | 候選 |
-| `diagnose_normals_consistency` | 方向 | **群集** | L1+L2 | 候選 |
-| `diagnose_clash` | 位置關係 | **群集(多對多)** | L1+L2 | 候選(對應 Rhino Clash) |
-| `diagnose_manufacturability` | 曲率品質 | 單體 / 群集(最小半徑/拔模角/壁厚) | L1+L2 | 候選(疊在 ThicknessAnalysis/DraftAngle/CurvatureAnalysis 之上) |
+| `diagnose_edge_pair` | 拓樸+連續性+偏差+位置 | 成對 / 子物件 | L1+L2 | Phase 1 進行中 |
+| `diagnose_edge_loop` | 連續性+拓樸 | 群集(一圈 naked edge) | L1+L2 | 候選 |
+| `diagnose_shell_watertight` | 拓樸 | 群集(面組能不能接成水密實體) | L1+L2 | 候選 |
+| `diagnose_surfaceset_continuity` | 連續性 | 群集(多片面 G 連續地圖) | L1+L2 | 候選 |
+| `diagnose_normals_consistency` | 方向 | 群集 | L1+L2 | 候選 |
+| `diagnose_clash` | 位置關係 | 群集(多對多) | L1+L2 | 候選(對應 Rhino Clash) |
+| `diagnose_manufacturability` | 曲率品質 | 單體 / 群集(最小半徑/拔模角/壁厚) | L1+L2 | 候選(疊在 ThicknessAnalysis/DraftAngle/CurvatureAnalysis 上) |
 | `diagnose_deviation_fit` | 偏差吻合 | 成對 / 群集(點雲 vs 面) | L1+L2 | 候選 |
 
 ---
 
-## 7. 來源與完整性邊界
+## 7. 來源與範圍
 
-**交叉核對的權威來源(McNeel Rhino 8 help)**:
+對過的官方頁(McNeel Rhino 8 help):
 1. Analyze 總覽 see-also — `seealso/sak_analysis.htm`
 2. Analyze 工具列 — `toolbarmap/analyze_toolbar.htm`
 3. Mass Properties 工具列 — `toolbarmap/mass_properties_toolbar.htm`
 4. Measure — `seealso/sak_measure.htm`
-5. New in Rhino 8 — `commandlist/newinrhino8.htm`(確認 R8 無新增分析「類別」,既有分析新增 SubD 支援;新測量指令 DimVolume)
+5. New in Rhino 8 — `commandlist/newinrhino8.htm`(R8 沒多分析「類別」,既有分析多了 SubD 支援;新測量指令 DimVolume)
 
-**刻意不納入(非 Rhino 原生「純看不改」指令)**:
-- Grasshopper 分析元件、第三方外掛(SectionTools、結構/海洋模組等)
-- 自訂 AnalysisMode 顯示管線 / 貼圖式檢視
-- 極冷門或後續版本限定指令
+沒收進來的(不是 Rhino 原生「純看不改」指令):
+- Grasshopper 分析元件、第三方外掛(SectionTools、結構/海洋模組那些)
+- 自訂 AnalysisMode 顯示管線、貼圖式檢視
+- 太冷門或後續版本才有的
 
-> 信心聲明:對 **Rhino 8 原生幾何分析指令**,本表已逐筆核對、邊界案例皆定性,視為完整。上述三類在範圍外,需要時再展開。
+範圍講白:Rhino 8 原生的幾何分析指令,逐支核過了,邊界案例也都定了性,當完整看。上面三類不算在內,要的話再展開。
