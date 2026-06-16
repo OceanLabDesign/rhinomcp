@@ -2,7 +2,7 @@
 """
 diagnose_edge_pair.py
 =====================
-Rhino 幾何診斷眼睛 — 第一顆:診斷「兩條曲面邊緣」的關係。
+Rhino 幾何分析評估 — 第一項:診斷「兩條曲面邊緣」的關係。
 
 做什麼:讀當前選取的兩條 brep 邊子物件 → 量測 → 分類 → 排序修補 roadmap → 出警告。
 分類:gap / misalignment / unjoined_coincident / not_a_gap。
@@ -118,7 +118,7 @@ def collect_selected_edges(doc):
         if picked_here == 0:
             other_selected += 1
     if other_selected:
-        notes.append("另有 {0} 個選取物件非 brep 邊子物件(可能整體選取或獨立曲線);本眼只看 brep 邊子物件。".format(other_selected))
+        notes.append("另有 {0} 個選取物件非 brep 邊子物件(可能整體選取或獨立曲線);本分析評估只看 brep 邊子物件。".format(other_selected))
     return found, notes
 
 

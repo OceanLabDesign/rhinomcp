@@ -1,9 +1,9 @@
-# 診斷眼睛分類學 (Diagnostics Taxonomy)
+## 分析評估分類學 (Diagnostics Taxonomy)
 
-> **用途**:這是 OceanLab「Rhino 幾何診斷眼睛」專案的版圖。它把 **Rhino 全部原生分析能力**做精準分類,標出哪些基底已覆蓋、哪些是我們的眼睛要長的格。每長一顆新眼睛,就往這張表填一個座標。
-> **維護**:新增分析能力 / 新眼睛時更新 §3 主分類表與 §6 roadmap。
+> **用途**:這是 OceanLab「Rhino 幾何分析評估」專案的版圖。它把 **Rhino 全部原生分析能力**做精準分類,標出哪些基底已覆蓋、哪些是我們要補的格。每新增一項分析評估,就往這張表填一個座標。
+> **維護**:新增分析能力 / 新分析評估時更新 §3 主分類表與 §6 roadmap。
 > **最後更新**:2026-06-14。
-> **相容鐵則**:眼睛只感知不修補;本文件中歸入「修改/修復」的指令我們永不執行(見 §4)。
+> **相容鐵則**:分析評估只感知不修補;本文件中歸入「修改/修復」的指令我們永不執行(見 §4)。
 
 ---
 
@@ -11,9 +11,21 @@
 
 - **Rhino 原生分析** = 全種類 × 各基數 × **L0**(給數字/給顏色,不下判斷)
 - **基底 `analyze_objects`** = 量測+拓樸子集 × 單體 × L0
-- **診斷眼睛(我們)** = 任意種類 × 任意基數(含 **N 群集**)× **L1+L2**(判讀+處方)×(跨幾何型別)
+- **分析評估(我們)** = 任意種類 × 任意基數(含 **N 群集**)× **L1+L2**(判讀+處方)×(跨幾何型別)
 
-眼睛的本質不是「某一種分析」,而是 **L1/L2 判讀層**——把 Rhino 的「儀器讀數」變成「診斷結論 + 排序修補劇本」。
+分析評估的本質不是「某一種分析」,而是 **L1/L2 判讀層**——把 Rhino 的「儀器讀數」變成「診斷結論 + 排序修補劇本」。
+
+```mermaid
+flowchart LR
+    R["Rhino 原生分析<br/>全 7 種類 · 各基數<br/>L0：給數字 / 顏色"]
+    B["基底 analyze_objects<br/>量測 + 拓樸子集 · 單體<br/>L0"]
+    E["分析評估（我們）<br/>任意種類 · 含 N 群集<br/>L1 判讀 + L2 處方"]
+    J["結構化 JSON<br/>分類 + 排序修補 roadmap"]
+    R -->|包成 MCP 工具| B
+    R -.->|經 execute 逃生口| E
+    B -.->|提供 L0 讀數| E
+    E --> J
+```
 
 ---
 
@@ -46,7 +58,7 @@
 
 > 指令清單已交叉核對 5 個 McNeel 權威頁(見 §7)。✅=基底已包成 MCP 工具;⚪=只能經 `run_command`/`execute_*` 逃生口呼叫(仍 L0);❌=完全沒有。
 
-| # | 種類 Kind | Rhino 原生指令(完整) | 典型基數 | 基底現況 | 眼睛切入(L1/L2) |
+| # | 種類 Kind | Rhino 原生指令(完整) | 典型基數 | 基底現況 | 分析評估切入(L1/L2) |
 |---|---|---|---|---|---|
 | 1 | **量測 Metric** | Distance, Length, Angle, Radius, Diameter, Domain, Curvature(點), EvaluatePt, EvaluateUVPt, BoundingBox, MarkFoci, CutVolume, Area, AreaCentroid, AreaMoments, Volume, VolumeCentroid, VolumeMoments, Hydrostatics, DimArea, DimVolume, DimAngle, DimCurveLength | 單體(Distance/Angle/CutVolume 成對) | ✅ `analyze_objects` 覆蓋大半(length/area/volume/centroid/bbox/degree) | 低(數值本身不需判讀) |
 | 2 | **拓樸/有效性 Topology** | Check, CheckNewObjects, SelBadObjects, ShowEdges, ShowEnds, PolygonCount, List, What, Audit | 單體 / **文件**(SelBadObjects/Audit 掃全場) | ⚪ 部分:`valid`+`validity_log`+整體 `naked_edge_count`+`is_solid` | **中高**:子物件層級 + 把「壞在哪、怎麼修」轉成 L1/L2 |
@@ -68,7 +80,7 @@
 
 | 類別 | 指令 | 為何排除 |
 |---|---|---|
-| 修改 / 修復 | Flip, MeshRepair, Untrim, EndBulge | 會**改幾何**(edit/repair)。Rhino 把它們塞在 Analyze 選單的「Repair」,但本質是動手——**眼睛永不執行**(鐵則 3) |
+| 修改 / 修復 | Flip, MeshRepair, Untrim, EndBulge | 會**改幾何**(edit/repair)。Rhino 把它們塞在 Analyze 選單的「Repair」,但本質是動手——**分析評估永不執行**(鐵則 3) |
 | 產生 / 抽取 | DupEdge, DupBorder, DupFaceBorder, Silhouette, Contour, Section, ExtractPt, ExtractIsocurve | 會**產生新幾何**供檢視,是 create/extract,不是 analyze |
 | 工具 / 計算機 | Calc, CalcRPN, ClearAnalysisMeshes | 非幾何分析(計算機 / 清暫存分析網) |
 | 顯示切換 | ShowDirOff, ShowEdgesOff, ShowEndsOff, CurvatureGraphOff, CurvatureAnalysisOff | 顯示狀態開關,非獨立分析 |
@@ -81,15 +93,15 @@
 |---|---|---|---|---|
 | **Rhino 原生分析指令** | 全 7 家族 | 各基數 | **L0** | 各型別 |
 | **基底 `analyze_objects`** | 量測 + 拓樸子集 | 單體(物件層級) | **L0** | Brep/Curve/Mesh/Extrusion/Surface |
-| **`diagnose_edge_pair`(第一顆眼睛)** | 拓樸 + 連續性 + 偏差 + 位置關係 | **成對 / 子物件** | **L1 + L2** | **目前僅 Brep 邊** |
+| **`diagnose_edge_pair`(第一項分析評估)** | 拓樸 + 連續性 + 偏差 + 位置關係 | **成對 / 子物件** | **L1 + L2** | **目前僅 Brep 邊** |
 
 基底其他唯讀工具(`get_object_info`/`get_selected_objects_info`/`get_document_summary`/`object_attributes`/`capture_viewport`)皆 L0;`execute_*`/`run_command` 可呼叫任何 Rhino 原生分析指令,但回傳仍是 L0 原始文字。
 
 ---
 
-## 6. 眼睛 roadmap(用座標展開)
+## 6. 分析評估 roadmap(用座標展開)
 
-| 眼睛 | 種類 | 基數 | 產出 | 狀態 |
+| 分析評估 | 種類 | 基數 | 產出 | 狀態 |
 |---|---|---|---|---|
 | `diagnose_edge_pair` | 拓樸+連續性+偏差+位置 | 成對 / 子物件 | L1+L2 | **Phase 1 進行中** |
 | `diagnose_edge_loop` | 連續性+拓樸 | **群集**(一圈 naked edge) | L1+L2 | 候選 |
