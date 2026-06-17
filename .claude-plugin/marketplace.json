@@ -1,0 +1,17 @@
+{
+  "name": "oceanlab",
+  "owner": {
+    "name": "Ocean Lab Design",
+    "email": "ks.architect01@oceanlabdesign.com"
+  },
+  "description": "Ocean Lab Design plugins for Claude Code.",
+  "plugins": [
+    {
+      "name": "rhinomcp-geometry",
+      "source": "./plugins/rhinomcp",
+      "description": "RhinoMCP (OceanLab fork): Rhino geometry analysis-evaluation tools plus the Rhino MCP server, in one install.",
+      "version": "0.1.0",
+      "license": "MIT"
+    }
+  ]
+}

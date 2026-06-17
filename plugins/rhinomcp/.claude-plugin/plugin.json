@@ -1,0 +1,25 @@
+{
+  "name": "rhinomcp-geometry",
+  "description": "RhinoMCP (OceanLab fork): analysis-evaluation tools like diagnose_edge_pair plus the Rhino MCP server.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Ocean Lab Design",
+    "email": "ks.architect01@oceanlabdesign.com"
+  },
+  "homepage": "https://github.com/OceanLabDesign/rhinomcp",
+  "repository": "https://github.com/OceanLabDesign/rhinomcp",
+  "license": "MIT",
+  "mcpServers": {
+    "rhino": {
+      "command": "uvx",
+      "args": [
+        "--from",
+        "git+https://github.com/OceanLabDesign/rhinomcp.git@feat/geometry-diagnostics#subdirectory=server",
+        "rhinomcp"
+      ],
+      "env": {
+        "RHINO_MCP_HOST": "127.0.0.1"
+      }
+    }
+  }
+}
