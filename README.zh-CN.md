@@ -15,7 +15,7 @@ AI 智能体，让 Claude、Cursor 等助手只需对话，就能建模、读取
 [![MCP](https://img.shields.io/badge/MCP-Model_Context_Protocol-000000)](https://modelcontextprotocol.io/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-[快速开始](#快速开始) · [功能一览](#功能一览) · [使用](#使用) · [示例提示词](#示例提示词) · [工具参考](#工具参考)
+[快速开始](#快速开始) · [本分支新增](#本分支新增了什么oceanlab) · [功能一览](#功能一览) · [使用](#使用) · [示例提示词](#示例提示词) · [工具参考](#工具参考)
 
 [English](README.md) · **简体中文**
 
@@ -84,7 +84,29 @@ AI 智能体，让 Claude、Cursor 等助手只需对话，就能建模、读取
 | 求解           | 运行解算，并显示运行期警告与错误                     |
 | 一次性搭建     | 在一次批量操作中构建并连好整张图，或修改已有的图     |
 
+## 本分支新增了什么（OceanLab）
+
+> [!NOTE]
+> 这是 **OceanLab 分支**。上游 RhinoMCP 负责*建造*几何；本分支在其之上长出一个
+> **分析评估层** —— 一个感知层，让 AI 能*看出*几何问题并给出修补建议，全程不修改你的文档。
+
+第一个分析评估工具是 **`diagnose_edge_pair`**。选取两条曲面边缘，它会判别两者的关系，
+并返回一份结构化报告与按置信度排序的修补路线图。
+
+| 它测量什么                                                                                                                          | 它报告什么                                                                                                                                                |
+| --------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 边缘价数（裸边 / 内部边）、间距（最大、平均、最小、是否均匀）、长度比、是否近乎重合、边界复杂度、跨边连续性（G0 / G1 / G2） | 一个诊断结论 —— `gap` / `misalignment` / `unjoined_coincident` / `not_a_gap` —— 外加排序后的修补路线图（BlendSrf / Loft / Sweep2 等）与诸如非流形风险的警告 |
+
+它只做*诊断* —— 测量、分类、给出建议，但绝不建造、合并或编辑你的文档。
+
+> 安装方法见 [从源码安装本分支](#从源码安装本分支oceanlab)。
+
 ## 快速开始
+
+> [!IMPORTANT]
+> 下面的快速开始安装的是**上游**包 —— 它**不包含**本分支的分析评估工具
+> （见 [本分支新增了什么](#本分支新增了什么oceanlab)）。要获取这些工具，请从源码构建：
+> [从源码安装本分支](#从源码安装本分支oceanlab)。
 
 三步：安装 Rhino 插件、连接 AI 客户端，然后在 Rhino 中启动桥接。
 
@@ -180,6 +202,63 @@ MCP 服务器，而不是 `uvx rhinomcp` 这种本地 stdio 命令。如果你�
 打开 Rhino 后，在命令行输入 **`mcpstart`**。这会启动 MCP 服务器要连接的 TCP 桥接
 （用 `mcpstop` 结束）。每个 Rhino 会话运行一次即可。
 
+## 从源码安装本分支（OceanLab）
+
+已发布的 `rhinomcp` 包和 Package Manager 构建都是**上游**版本 —— 它们不包含本分支的分析评估
+工具（`diagnose_edge_pair` 等）。要运行此版本，你需要从本地克隆构建插件，并运行 Python 服务器。
+
+**前置条件：** Rhino 8 · [.NET 8 SDK](https://dotnet.microsoft.com/) · [uv](https://docs.astral.sh/uv/) · 一个 MCP 客户端（Claude Code/Desktop、Cursor 等）。
+
+**1. 构建并安装 Rhino 插件**
+
+```bash
+# macOS
+./plugin/install.sh
+```
+```powershell
+# Windows (PowerShell)
+powershell -ExecutionPolicy Bypass -File plugin\install.ps1
+```
+在 **macOS** 上，脚本会安装一个 Yak 包 —— Rhino for Mac 无法直接加载裸 `.rhp` —— 因此只要启动
+Rhino 8，它就会自动加载（无需拖放）。脚本运行时 Rhino 必须**处于关闭状态**（运行中的 Rhino
+会锁定该包）。在 **Windows** 上，仅首次：将构建出的 `rhinomcp.rhp`（脚本会打印其路径）拖到
+视口上，并接受加载对话框。
+
+**2. 设置 Python 服务器**
+
+```bash
+cd server
+uv venv
+uv pip install -e .
+```
+
+**3. 让 MCP 客户端指向这个本地服务器**（不是 `uvx rhinomcp`，那是上游版本）
+
+```bash
+# Claude Code —— 把路径换成你的克隆位置
+claude mcp add rhino -- uv run --directory /path/to/rhinomcp/server rhinomcp
+```
+或手动编辑客户端配置（Claude Desktop / Cursor / Codex）：
+```json
+{
+  "mcpServers": {
+    "rhino": {
+      "command": "uv",
+      "args": ["run", "--directory", "/path/to/rhinomcp/server", "rhinomcp"],
+      "env": { "RHINO_MCP_HOST": "127.0.0.1" }
+    }
+  }
+}
+```
+同一时间只运行一个 RhinoMCP 服务器。
+
+**4. 在 Rhino 中启动桥接**
+
+打开 Rhino 8 并输入 `mcpstart`。你的客户端现在会列出所有工具，包括 `diagnose_edge_pair`。
+
+> 代码改动后：重新运行安装脚本（插件 C# 需要重启 Rhino），并重启 MCP 服务器（新的 Python
+> 工具会在服务器重启时载入）。
+
 ## 使用
 
 桥接已启动、客户端已连接后，你就能看到 RhinoMCP 工具。接下来直接对话即可：让助手建模、
@@ -217,6 +296,7 @@ that have different heights."_
 | `loft` / `extrude_curve` / `sweep1` / `offset_curve` / `pipe`                                                 | 高级曲面与实体建模                       |
 | `project_curve` / `intersect_curves` / `split_curve`                                                          | 曲线操作                                 |
 | `analyze_objects`                                                                                             | 测量长度、面积、体积、包围盒等           |
+| `diagnose_edge_pair` *(本分支)*                                                                               | 诊断两条曲面边缘 —— `gap` / `misalignment` / `unjoined_coincident` / `not_a_gap` —— 并给出按置信度排序的修补路线图 |
 | `select_objects`                                                                                              | 按条件选择（名称、颜色、类别；AND / OR） |
 | `get_objects` / `get_object_info` / `get_selected_objects_info`                                               | 查询对象                                 |
 | `get_object_attributes` / `update_object_attributes`                                                          | 读写对象属性                             |

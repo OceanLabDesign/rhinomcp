@@ -16,7 +16,7 @@ Grasshopper definitions for you, just by chatting.
 [![MCP](https://img.shields.io/badge/MCP-Model_Context_Protocol-000000)](https://modelcontextprotocol.io/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-[Quick start](#quick-start) · [What it can do](#what-it-can-do) · [Usage](#usage) · [Examples](#example-prompts) · [Tool reference](#tool-reference)
+[Quick start](#quick-start) · [What this fork adds](#what-this-fork-adds-oceanlab) · [What it can do](#what-it-can-do) · [Usage](#usage) · [Examples](#example-prompts) · [Tool reference](#tool-reference)
 
 **English** · [简体中文](README.zh-CN.md)
 
@@ -85,13 +85,29 @@ Prefer a walkthrough? Nate made a showcase and install [tutorial on YouTube](htt
 | Solve             | Run the solution and surface runtime warnings and errors                                              |
 | Build in one shot | Construct and wire a whole graph, or mutate an existing one, in a single batched operation            |
 
+## What this fork adds (OceanLab)
+
+> [!NOTE]
+> This is the **OceanLab fork**. Upstream RhinoMCP *builds* geometry; this fork grows an
+> **analysis-evaluation layer** on top — a perception layer that lets the AI *see* geometric
+> problems and recommend fixes, all without modifying your document.
+
+The first analysis-evaluation tool is **`diagnose_edge_pair`**. Select two surface edges and it
+classifies their relationship and returns a structured report with a confidence-ranked repair
+roadmap.
+
+| It measures                                                                                                                                                  | It reports                                                                                                                                                              |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Edge valence (naked / interior), gap (max, mean, min, uniformity), length ratio, near-coincidence, boundary complexity, and cross-edge continuity (G0 / G1 / G2) | A diagnosis — `gap`, `misalignment`, `unjoined_coincident`, or `not_a_gap` — plus ranked roadmaps (BlendSrf / Loft / Sweep2, …) and warnings such as non-manifold risk |
+
+It only *diagnoses* — it measures, classifies, and advises, but never builds, joins, or edits your document.
+
 ## Quick start
 
 > [!IMPORTANT]
-> **This is the OceanLab fork.** It adds an analysis-evaluation layer (e.g. the `diagnose_edge_pair`
-> tool) that is **not** in the published `rhinomcp` package or the Package Manager build. The Quick
-> start below installs the **upstream** version. To get this fork's tools, build from source —
-> see [Install this fork from source](#install-this-fork-from-source-oceanlab).
+> The Quick start below installs the **upstream** package — it does **not** include this fork's
+> analysis-evaluation tools (see [What this fork adds](#what-this-fork-adds-oceanlab)). To get them, build
+> from source: [Install this fork from source](#install-this-fork-from-source-oceanlab).
 
 Three steps: install the Rhino plugin, connect your AI client, then start the bridge in Rhino.
 
@@ -282,6 +298,7 @@ pattern with cylinders that have different heights."_
 | `loft` / `extrude_curve` / `sweep1` / `offset_curve` / `pipe`                                                 | Advanced surface and solid modeling                    |
 | `project_curve` / `intersect_curves` / `split_curve`                                                          | Curve operations                                       |
 | `analyze_objects`                                                                                             | Measure length, area, volume, bounding boxes, and more |
+| `diagnose_edge_pair` *(this fork)*                                                                            | Diagnose two surface edges — `gap` / `misalignment` / `unjoined_coincident` / `not_a_gap` — with a ranked repair roadmap |
 | `select_objects`                                                                                              | Select by filters (name, color, category; AND / OR)    |
 | `get_objects` / `get_object_info` / `get_selected_objects_info`                                               | Query objects                                          |
 | `get_object_attributes` / `update_object_attributes`                                                          | Read and write object attributes                       |
